@@ -18,7 +18,7 @@
   .badge a{color:inherit;text-decoration:none}
   .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:16px}
   .card{background:linear-gradient(180deg, #12182b, #0f1426);border:1px solid var(--border);border-radius:16px;overflow:hidden;transform:translateY(6px);opacity:0;animation:fadeUp .5s ease forwards}
-  .thumb{width:100%;aspect-ratio:4/3;object-fit:cover;background:#090d18; transition: transform .25s ease}
+  .thumb{width:100%;aspect-ratio:4/3;object-fit:cover;background:#090d18; transition: transform .25s ease; cursor:zoom-in; user-select:none}
   .row{display:flex;align-items:center;gap:10px;padding:10px 12px}
   .title{font-weight:600}
   .muted{font-size:12px;color:var(--muted)}
@@ -32,6 +32,33 @@
   a{color:#a8cfff}
   @keyframes fadeUp{to{transform:none;opacity:1}}
   @media (prefers-reduced-motion: reduce){ .card{animation:none; opacity:1; transform:none} .thumb{transition:none} .btn{transition:none} }
+
+  /* ===== Lightbox (Full-size Preview) ===== */
+  .lb-overlay{
+    position:fixed; inset:0; display:none;
+    align-items:center; justify-content:center;
+    background:rgba(0,0,0,.78); z-index:9999;
+    animation: lbFade .18s ease;
+  }
+  .lb-overlay.show{ display:flex; }
+  @keyframes lbFade{ from{opacity:0} to{opacity:1} }
+  .lb-img-wrap{
+    max-width:min(92vw, 1400px);
+    max-height:90vh;
+    border-radius:12px; overflow:hidden; background:#0b0e14;
+    box-shadow:0 20px 60px rgba(0,0,0,.6);
+  }
+  .lb-img{ display:block; max-width:100%; max-height:90vh; }
+  .lb-close{
+    position:fixed; top:18px; right:22px;
+    background:rgba(255,255,255,.1); color:#e8ecf1;
+    border:1px solid rgba(255,255,255,.2);
+    padding:8px 12px; border-radius:10px; font-weight:700; cursor:pointer;
+    backdrop-filter: blur(6px); z-index:10000;
+  }
+  .lb-caption{
+    position:fixed; left:22px; bottom:16px; color:#cfd6e6; font-size:13px; opacity:.9;
+  }
 </style>
 </head>
 <body>
@@ -43,6 +70,7 @@
       <span class="badge" id="countBadge">0 entries</span>
       <span class="badge">Selected: <span id="selCount">0</span> / 5</span>
       <span class="badge"><a href="index.html">← Back to Home</a></span>
+      <span class="badge">Tip: Click a photo to preview</span>
     </div>
 
     <div id="grid" class="grid" aria-live="polite"></div>
@@ -53,6 +81,13 @@
       <div id="status" style="font-size:14px;color:#9fb2d8"></div>
       <button class="btn" id="submitBtn" disabled>Submit</button>
     </div>
+  </div>
+
+  <!-- ===== Lightbox HTML ===== -->
+  <div class="lb-overlay" id="lightbox" aria-modal="true" role="dialog">
+    <button class="lb-close" id="lbClose" aria-label="Close">Close ✕</button>
+    <div class="lb-img-wrap"><img id="lbImg" class="lb-img" alt=""></div>
+    <div class="lb-caption" id="lbCap"></div>
   </div>
 
 <script>
@@ -105,7 +140,7 @@
       card.className = 'card';
       card.style.animationDelay = `${Math.min(idx, 8) * 40}ms`;
       card.innerHTML = `
-        <img class="thumb" src="${p.src}" alt="${p.label}">
+        <img class="thumb" src="${p.src}" alt="${p.label}" data-index="${idx}">
         <div class="row">
           <div style="display:flex;flex-direction:column">
             <div class="title">${p.label}</div>
@@ -116,6 +151,7 @@
       grid.appendChild(card);
     });
 
+    // checkbox mantığı
     grid.querySelectorAll('input[type="checkbox"]').forEach(cb=>{
       cb.addEventListener('change',e=>{
         const val = e.target.getAttribute('data-id');
@@ -129,6 +165,9 @@
         submitBtn.disabled = selected.size===0;
       });
     });
+
+    // === Lightbox bağla ===
+    bindLightbox();
   }
 
   function fingerprint(){
@@ -152,8 +191,66 @@
     else location.replace('results.html');
   }
 
-  render();
   submitBtn.addEventListener('click', submitVotes);
+
+  // ===== Lightbox Logic =====
+  const lb = document.getElementById('lightbox');
+  const lbImg = document.getElementById('lbImg');
+  const lbCap = document.getElementById('lbCap');
+  const lbClose = document.getElementById('lbClose');
+  let currentIndex = -1;
+
+  function openLightboxByIndex(idx){
+    const item = ITEMS[idx];
+    if(!item) return;
+    lbImg.src = item.src;
+    lbCap.textContent = item.label;
+    currentIndex = idx;
+    lb.classList.add('show');
+    document.documentElement.style.overflow = 'hidden';
+  }
+  function closeLightbox(){
+    lb.classList.remove('show');
+    lbImg.src = '';
+    currentIndex = -1;
+    document.documentElement.style.overflow = '';
+  }
+  function prevImg(){
+    if(currentIndex < 0) return;
+    const idx = (currentIndex - 1 + ITEMS.length) % ITEMS.length;
+    openLightboxByIndex(idx);
+  }
+  function nextImg(){
+    if(currentIndex < 0) return;
+    const idx = (currentIndex + 1) % ITEMS.length;
+    openLightboxByIndex(idx);
+  }
+
+  function bindLightbox(){
+    const thumbs = document.querySelectorAll('.thumb');
+    thumbs.forEach(img=>{
+      if(img.dataset.lbBound) return;
+      img.dataset.lbBound = '1';
+      img.addEventListener('click', (ev)=>{
+        const idx = Number(img.getAttribute('data-index'));
+        openLightboxByIndex(idx);
+        ev.stopPropagation();
+        ev.preventDefault();
+      });
+    });
+  }
+
+  lbClose.addEventListener('click', closeLightbox);
+  lb.addEventListener('click', (e)=>{ if(e.target===lb) closeLightbox(); });
+  document.addEventListener('keydown', (e)=>{
+    if(!lb.classList.contains('show')) return;
+    if(e.key === 'Escape') closeLightbox();
+    else if(e.key === 'ArrowLeft') prevImg();
+    else if(e.key === 'ArrowRight') nextImg();
+  });
+
+  // ilk render
+  render();
 </script>
 </body>
 </html>
