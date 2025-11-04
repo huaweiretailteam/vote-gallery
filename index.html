@@ -38,43 +38,47 @@ p.sub{color:var(--muted);max-width:720px;margin:0 auto 26px;line-height:1.6}
 }
 .btn:hover{transform:translateY(-2px);box-shadow:0 12px 28px rgba(123,178,255,.35)}
 
-/* signature – earlier reveal */
+/* signature – faster & earlier */
 .signature{
-  margin-top:18px;font-size:14px;color:var(--muted);
-  opacity:0;animation:fadeIn 1s ease 1.2s forwards; /* daha erken */
+  margin-top:16px;font-size:14px;color:var(--muted);
+  opacity:0;animation:fadeIn 0.6s ease 0.6s forwards; /* hızlı ve erken */
 }
 .signature span{color:var(--accent-2);font-weight:700}
 @keyframes fadeIn{to{opacity:1}}
 
-/* === CAT: center → BIG grow → shrink to normal while flying to corner === */
+/* === CAT: center BIG → slow shrink → move to corner === */
 .cat{
   position:absolute; z-index:9;
-  width:min(38vw,260px); max-width:300px; height:auto;
-  right:-6px; bottom:-6px; /* final konum */
-  filter:drop-shadow(0 24px 36px rgba(0,0,0,.55));
+  width:min(40vw,280px); max-width:320px; height:auto;
 
-  /* başlangıç: görünmez, merkezde küçük */
-  opacity:0; transform:translate(-50%, -50%) scale(.6);
+  /* final position */
+  right:-6px; bottom:-6px;
+
+  /* start: centered & BIG (invisible) */
+  opacity:0; transform:translate(-50%, -50%) scale(1.6);
+
+  /* Step1: yavaşça ortaya çıkıp büyük kalsın (1.2s) */
+  /* Step2: yavaşça küçülerek köşeye gitsin (1.8s) */
+  /* Step3: köşede hafif nefes */
   animation:
-    catCenterGrow .75s cubic-bezier(.2,.7,.2,1) .05s forwards,   /* merkeze gel + büyükçe büyü */
-    catToCorner   1.05s cubic-bezier(.2,.7,.2,1) .80s forwards,   /* normale küçül + köşeye ak */
-    catIdle       5.5s ease-in-out 1.95s infinite alternate;      /* hafif nefes */
+    catAppearHold 1.2s ease-out 0.1s forwards,
+    catShrinkMove 1.8s cubic-bezier(.2,.7,.2,1) 1.3s forwards,
+    catIdle       6s ease-in-out 3.2s infinite alternate;
 }
 
-/* Step1: merkeze fade-in + güçlü büyüme */
-@keyframes catCenterGrow{
-  0%   { opacity:0; transform:translate(50vw, 50vh) scale(.6); }
-  60%  { opacity:1; transform:translate(-50%, -50%) scale(1.45); } /* baya büyüsün */
-  100% { opacity:1; transform:translate(-50%, -50%) scale(1.45); }
+/* Step1: fade-in to center, stay big */
+@keyframes catAppearHold{
+  0%   { opacity:0; transform:translate(50vw, 50vh) scale(1.2); }
+  100% { opacity:1; transform:translate(-50%, -50%) scale(1.6); }
 }
 
-/* Step2: normal boyuta shrink + final köşeye akış */
-@keyframes catToCorner{
-  0%   { transform:translate(-50%, -50%) scale(1.45); }
+/* Step2: shrink to normal while moving to bottom-right */
+@keyframes catShrinkMove{
+  0%   { transform:translate(-50%, -50%) scale(1.6); }
   100% { transform:translate(0,0) scale(1); }
 }
 
-/* Step3: köşede subtle breathing */
+/* Step3: gentle breathing at final spot */
 @keyframes catIdle{
   from { transform:translate(0,0) scale(1); }
   to   { transform:translate(0,-6px) scale(1.02); }
@@ -83,7 +87,7 @@ p.sub{color:var(--muted);max-width:720px;margin:0 auto 26px;line-height:1.6}
 /* responsive */
 @media (max-width:540px){
   .wrap{padding-bottom:150px}
-  .cat{right:-10px;width:min(44vw,210px)}
+  .cat{right:-10px;width:min(46vw,220px)}
 }
 @media (prefers-reduced-motion:reduce){
   .cat,.signature{animation:none;opacity:1;transform:none}
@@ -93,7 +97,7 @@ p.sub{color:var(--muted);max-width:720px;margin:0 auto 26px;line-height:1.6}
 
 <body>
 
-<!-- CAT IMAGE -->
+<!-- CAT IMAGE (must be images/cat-signature.jpg) -->
 <img src="images/cat-signature.png" alt="cat" class="cat">
 
 <div class="wrap">
@@ -112,7 +116,7 @@ p.sub{color:var(--muted);max-width:720px;margin:0 auto 26px;line-height:1.6}
 
   <p><a class="btn" href="vote.html?step=photo">Start Voting</a></p>
 
-  <p class="signature">Created by <span>Aslı Demirelli</span></p>
+  <p class="signature">Created by <span>Asli Demirelli</span></p>
 </div>
 
 </body>
