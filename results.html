@@ -1,47 +1,74 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="en">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Sonuçlar – Retail Bülten Yarışmaları</title>
+<title>Results – Retail Bulletin Contest</title>
 <style>
-  body{margin:0;background:#0f1115;color:#e8ecf1;font-family:Inter,system-ui,sans-serif}
-  .wrap{max-width:1100px;margin:24px auto;padding:0 16px}
-  h1{margin:0 0 16px}
-  h2{margin:24px 0 10px}
-  p.sub{margin:0 0 18px;color:#9aa0b3}
-  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px}
-  .card{background:#151824;border:1px solid #20263a;border-radius:14px;overflow:hidden}
-  .thumb{width:100%;aspect-ratio:4/3;object-fit:cover;background:#0b0e15}
+  :root{
+    --bg:#0b0e14; --panel:#111625; --muted:#9aa6bf; --border:#202842; --accent:#7bb2ff; --text:#e8ecf1;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:radial-gradient(1000px 520px at 80% -10%, #1b2040 0%, transparent 60%), var(--bg); color:var(--text); font-family:Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif}
+  .wrap{max-width:1120px;margin:26px auto;padding:0 18px}
+  h1{margin:0 0 6px;font-size:28px}
+  p.sub{margin:0 0 16px;color:var(--muted)}
+  .toolbar{display:flex;gap:10px;align-items:center;margin:10px 0 16px;flex-wrap:wrap}
+  .badge{font-size:12px;color:var(--muted);border:1px solid var(--border);padding:6px 10px;border-radius:999px;background:#0f1426}
+  .badge a{color:inherit;text-decoration:none}
+  .tabs{display:flex;gap:10px;margin:6px 0 16px}
+  .tab{background:#0f1426;border:1px solid var(--border);color:var(--text);border-radius:10px;padding:8px 12px;cursor:pointer;transition:transform .15s ease, box-shadow .2s ease}
+  .tab:hover{transform:translateY(-1px)}
+  .tab.active{background:linear-gradient(180deg, var(--accent), #5da3ff); color:#061428; border-color:transparent; box-shadow:0 8px 18px rgba(123,178,255,.25)}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:16px}
+  .card{background:linear-gradient(180deg, #12182b, #0f1426);border:1px solid var(--border);border-radius:16px;overflow:hidden;transform:translateY(6px);opacity:0;animation:fadeUp .45s ease forwards}
+  .thumb{width:100%;aspect-ratio:4/3;object-fit:cover;background:#090d18}
   .row{display:flex;align-items:center;gap:10px;padding:10px 12px}
   .title{font-weight:600}
-  .score{margin-left:auto;background:#1b2438;border:1px solid #29324b;border-radius:999px;padding:6px 10px;font-weight:800}
-  .toolbar{display:flex;gap:10px;align-items:center;margin:10px 0 16px}
-  .badge{font-size:12px;color:#a6afc3;border:1px solid #2a2f44;padding:6px 10px;border-radius:999px}
-  a{color:#9dccff}
+  .score{margin-left:auto;background:#16213a;border:1px solid #263255;border-radius:999px;padding:6px 10px;font-weight:800;min-width:34px;text-align:center}
+  a{color:#a8cfff}
+  @keyframes fadeUp{to{transform:none;opacity:1}}
+  @media (prefers-reduced-motion: reduce){ .card{animation:none;opacity:1;transform:none} .tab{transition:none} }
 </style>
 </head>
 <body>
   <div class="wrap">
-    <h1>Toplam Oylar</h1>
-    <p class="sub">Aşağıda Fotoğraf ve Çizim yarışmaları için toplam oy sayıları ayrı başlıklar altında listelenir.</p>
+    <h1>Results</h1>
+    <p class="sub">Switch between tabs to view totals and ranking per category.</p>
+
     <div class="toolbar">
-      <a class="badge" href="index.html">← Ana sayfa</a>
-      <span class="badge" id="totalPhoto">Fotoğraf toplam: 0</span>
-      <span class="badge" id="totalDrawing">Çizim toplam: 0</span>
+      <span class="badge"><a href="index.html">← Back to Home</a></span>
+      <span class="badge" id="totalVotes">Total votes: 0</span>
+      <button id="refreshBtn" class="badge" style="cursor:pointer">Refresh</button>
+      <label class="badge" style="cursor:pointer">
+        <input id="autoRefresh" type="checkbox" style="vertical-align:middle;margin-right:6px">Auto-refresh (15 sec)
+      </label>
     </div>
 
-    <h2>Fotoğraf Yarışması</h2>
-    <div id="photoGrid" class="grid"></div>
+    <div class="tabs" role="tablist">
+      <button id="tabPhoto"   class="tab active" role="tab" aria-selected="true">Photo</button>
+      <button id="tabDrawing" class="tab"        role="tab" aria-selected="false">Drawing</button>
+    </div>
 
-    <h2>Çizim Yarışması</h2>
-    <div id="drawingGrid" class="grid"></div>
+    <div id="grid" class="grid" aria-live="polite"></div>
   </div>
 
 <script>
   const API_BASE = "https://script.google.com/macros/s/AKfycbz1oeJv3JdO6v5sB87AlcJMqKS8Rbjqb6sR73u235KmBZpNn9DscySfujcVQf7-lz6Eww/exec";
-  const PHOTO_COUNT   = 2; // gerçek sayılara göre güncelle
-  const DRAWING_COUNT = 2;
+
+  // ✅ Your real counts:
+  const PHOTO_COUNT   = 43;
+  const DRAWING_COUNT = 13;
+
+  const grid = document.getElementById('grid');
+  const totalVotesEl = document.getElementById('totalVotes');
+  const tabPhoto = document.getElementById('tabPhoto');
+  const tabDrawing = document.getElementById('tabDrawing');
+  const refreshBtn = document.getElementById('refreshBtn');
+  const autoRefresh = document.getElementById('autoRefresh');
+
+  let ACTIVE_KIND = 'photo';
+  let timer = null;
 
   function buildList(kind){
     const n = kind==='drawing' ? DRAWING_COUNT : PHOTO_COUNT;
@@ -53,41 +80,67 @@
     });
   }
 
-  function renderSection(kind, counts, gridEl, totalEl){
+  function render(kind, counts){
     const LIST = buildList(kind);
-    gridEl.innerHTML = '';
+    grid.innerHTML = '';
     let total = 0;
     const data = LIST.map(p=>({ ...p, score: (counts[p.label]||0) })).sort((a,b)=> b.score - a.score);
     data.forEach(p=> total += p.score );
-    totalEl.textContent = (kind==='drawing' ? 'Çizim toplam: ' : 'Fotoğraf toplam: ') + total;
+    totalVotesEl.textContent = `Total votes: ${total}`;
 
     if (LIST.length===0) {
-      gridEl.innerHTML = '<div style="opacity:.8">Bu kategoride şu an görsel yok.</div>';
+      grid.innerHTML = '<div style="opacity:.8">No entries in this category.</div>';
       return;
     }
 
-    data.forEach(p=>{
+    data.forEach((p, idx)=>{
       const card = document.createElement('div');
       card.className = 'card';
+      card.style.animationDelay = `${Math.min(idx, 12) * 40}ms`; // smoother with many cards
       card.innerHTML = `
-        <img class="thumb" src="${p.src}" alt="${p.label}" onerror="this.style.opacity=0.25">
-        <div class="row"><div class="title">${p.label}</div><div class="score">${p.score}</div></div>`;
-      gridEl.appendChild(card);
+        <img class="thumb" src="${p.src}" alt="${p.label}">
+        <div class="row">
+          <div class="title">${p.label}</div>
+          <div class="score">${p.score}</div>
+        </div>`;
+      grid.appendChild(card);
     });
   }
 
-  async function loadAll(){
-    const resPhoto = await fetch(API_BASE + '?kind=photo');  const jsPhoto = await resPhoto.json();
-    const resDraw  = await fetch(API_BASE + '?kind=drawing');const jsDraw  = await resDraw.json();
+  async function load(kind){
+    ACTIVE_KIND = kind;
+    tabPhoto.classList.toggle('active', kind==='photo');
+    tabDrawing.classList.toggle('active', kind==='drawing');
+    tabPhoto.setAttribute('aria-selected', kind==='photo');
+    tabDrawing.setAttribute('aria-selected', kind==='drawing');
 
-    const photoCounts = (jsPhoto && jsPhoto.ok && jsPhoto.counts) ? jsPhoto.counts : {};
-    const drawCounts  = (jsDraw  && jsDraw.ok  && jsDraw.counts)  ? jsDraw.counts  : {};
-
-    renderSection('photo',   photoCounts,   document.getElementById('photoGrid'),   document.getElementById('totalPhoto'));
-    renderSection('drawing', drawCounts,    document.getElementById('drawingGrid'), document.getElementById('totalDrawing'));
+    try{
+      const res = await fetch(API_BASE + `?kind=${kind}`);
+      const json = await res.json();
+      if(json && json.ok){
+        render(kind, json.counts || {});
+      }else{
+        grid.innerHTML = '<div style="color:#ff9a9a">Error loading results.</div>';
+      }
+    }catch(e){
+      grid.innerHTML = '<div style="color:#ff9a9a">Network error.</div>';
+    }
   }
 
-  loadAll();
+  tabPhoto.addEventListener('click', ()=> load('photo'));
+  tabDrawing.addEventListener('click', ()=> load('drawing'));
+  refreshBtn.addEventListener('click', ()=> load(ACTIVE_KIND));
+
+  autoRefresh.addEventListener('change', ()=>{
+    if (autoRefresh.checked){
+      timer = setInterval(()=> load(ACTIVE_KIND), 15000);
+    } else if (timer){
+      clearInterval(timer);
+    }
+  });
+
+  // Initial
+  load('photo');
 </script>
 </body>
 </html>
