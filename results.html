@@ -40,8 +40,10 @@
 
 <script>
   const API_BASE = "https://script.google.com/macros/s/AKfycbz1oeJv3JdO6v5sB87AlcJMqKS8Rbjqb6sR73u235KmBZpNn9DscySfujcVQf7-lz6Eww/exec";
-  const PHOTO_COUNT   = 2; // gerçek sayılara göre güncelle
-  const DRAWING_COUNT = 2;
+
+  // Gerçek sayılarını burada ayarla:
+  const PHOTO_COUNT   = 42;
+  const DRAWING_COUNT = 42;
 
   function buildList(kind){
     const n = kind==='drawing' ? DRAWING_COUNT : PHOTO_COUNT;
@@ -77,8 +79,8 @@
   }
 
   async function loadAll(){
-    const resPhoto = await fetch(API_BASE + '?kind=photo');  const jsPhoto = await resPhoto.json();
-    const resDraw  = await fetch(API_BASE + '?kind=drawing');const jsDraw  = await resDraw.json();
+    const resPhoto = await fetch(API_BASE + '?kind=photo');   const jsPhoto = await resPhoto.json();
+    const resDraw  = await fetch(API_BASE + '?kind=drawing'); const jsDraw  = await resDraw.json();
 
     const photoCounts = (jsPhoto && jsPhoto.ok && jsPhoto.counts) ? jsPhoto.counts : {};
     const drawCounts  = (jsDraw  && jsDraw.ok  && jsDraw.counts)  ? jsDraw.counts  : {};
