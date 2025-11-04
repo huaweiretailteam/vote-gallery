@@ -4,137 +4,163 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Retail Bulletin Photo & Drawing Contest</title>
+
 <style>
-  :root{
-    --bg:#0a0f1a; --bg-2:#0c1222; --panel:#0f1628;
-    --muted:#98a6c7; --text:#eaf0ff; --border:#1e2a49;
-    --accent:#7bb2ff; --accent-2:#8be9c7;
-  }
-  *{box-sizing:border-box}
-  body{
-    margin:0; min-height:100dvh; color:var(--text);
-    font-family:Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-    background:
-      radial-gradient(1200px 700px at 70% -10%, #18234a 0%, transparent 60%),
-      radial-gradient(900px 500px at 10% 110%, #0e1a36 0%, transparent 65%),
-      linear-gradient(180deg, var(--bg), var(--bg-2));
-  }
-  .wrap{ position:relative; max-width:900px; margin:72px auto 40px; padding:0 18px 140px; text-align:center; }
+:root{
+  --bg: #0b0e14;
+  --panel:#111625;
+  --muted:#9aa6bf;
+  --border:#202842;
+  --accent:#7bb2ff;
+  --accent-2:#8be9c7;
+  --text:#e8ecf1;
+}
 
-  h1{
-    margin:0 0 16px; font-size:clamp(28px,6vw,44px); line-height:1.15; letter-spacing:.4px;
-    background:linear-gradient(180deg,#fff,#cfe3ff 60%,#a9bbd8);
-    -webkit-background-clip:text;background-clip:text;color:transparent;
-    text-shadow:0 2px 18px rgba(59,130,246,.15);
-  }
-  p.sub{ margin:0 auto 28px; max-width:760px; color:var(--muted); line-height:1.6; font-size:clamp(14px,2.2vw,18px); }
+/* RESET */
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  background:radial-gradient(1200px 600px at 70% -20%, #1a2240 0%, transparent 60%), var(--bg);
+  color:var(--text);
+  overflow-x:hidden;
+}
 
-  .panel{
-    margin:24px auto 26px; max-width:740px;
-    background:linear-gradient(180deg, rgba(16,24,45,.8), rgba(12,18,35,.8));
-    border:1px solid var(--border); border-radius:22px; padding:22px; color:#c8d4f0;
-    box-shadow:0 10px 30px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.04);
-    backdrop-filter:blur(6px);
-  }
-  .btn{
-    display:inline-block; padding:16px 22px; border-radius:14px; border:none; text-decoration:none;
-    font-weight:900; font-size:18px; color:#041225;
-    background:linear-gradient(180deg,#86b9ff,#5da3ff);
-    box-shadow:0 12px 26px rgba(123,178,255,.35), 0 0 0 1px rgba(255,255,255,.05) inset;
-    transition:transform .18s ease, box-shadow .18s ease, filter .18s ease;
-  }
-  .btn:hover{ transform:translateY(-1px); filter:saturate(1.05) }
-  .btn:active{ transform:translateY(0); box-shadow:0 6px 14px rgba(123,178,255,.28) }
+/* PAGE WRAPPER */
+.wrap{
+  max-width:900px;
+  margin:90px auto;
+  padding:0 22px;
+  text-align:center;
+}
 
-  .steps{ display:inline-flex; gap:10px; margin-top:14px; color:#b9c6e6; font-size:13px; }
-  .chip{ border:1px solid var(--border); padding:7px 11px; border-radius:999px; background:rgba(12,18,35,.5); }
+/* TITLE */
+h1{
+  font-size:38px;
+  font-weight:800;
+  letter-spacing:.3px;
+  margin-bottom:14px;
+}
 
-  /* ambience */
-  .float{ position:fixed; inset:0; pointer-events:none; }
-  .orb{ position:absolute; width:320px; height:320px; border-radius:50%; filter:blur(70px); opacity:.15; }
-  .o1{ top:6%; left:8%; background:#7bb2ff; animation:drift 18s ease-in-out infinite alternate; }
-  .o2{ bottom:8%; right:10%; background:#8be9c7; animation:drift 22s ease-in-out infinite alternate-reverse; }
-  @keyframes drift{ from{transform:translate(0,0)} to{transform:translate(28px,-24px)} }
+/* SUBDESC */
+p.sub{
+  color:var(--muted);
+  max-width:720px;
+  margin:0 auto 26px;
+  line-height:1.6;
+}
 
-  /* === CAT: wave-in from top-left to final spot (bottom-right) === */
-  .cat{
-    position:absolute; right:-6px; bottom:-8px; z-index:3;
-    width:min(34vw, 240px); max-width:320px; height:auto;
-    filter:drop-shadow(0 26px 40px rgba(0,0,0,.55));
-    /* start off-screen (we animate via translate to final 0,0) */
-    transform:translate(-80vw,-36vh) scale(.96) rotate(-4deg);
-    opacity:0;
-    animation:
-      catArrive 1.9s cubic-bezier(.2,.7,.2,1) .1s forwards,
-      catIdle   6s ease-in-out 2.2s infinite alternate;
-  }
-  /* wavy path with intermediate checkpoints */
-  @keyframes catArrive{
-    0%   { transform:translate(-80vw,-36vh) scale(.96) rotate(-4deg); opacity:0; }
-    35%  { transform:translate(-46vw,-18vh) scale(.98) rotate(-2.5deg); opacity:.7; }
-    60%  { transform:translate(-18vw,-8vh)  scale(1)   rotate(-1deg);   opacity:1; }
-    78%  { transform:translate(-8vw,-3vh)   scale(1.01) rotate(-.4deg); }
-    88%  { transform:translate(-3vw,-1.4vh) scale(1.005) rotate(-.2deg); }
-    100% { transform:translate(0,0)          scale(1)    rotate(0); }
-  }
-  /* gentle floating after landing */
-  @keyframes catIdle{
-    from{ transform:translate(0,0) scale(1) }
-    to  { transform:translate(0,-6px) scale(1.01) }
-  }
+/* CARD PANEL */
+.card{
+  margin:30px auto;
+  max-width:700px;
+  background:linear-gradient(180deg, #101525, #0f1321);
+  border:1px solid var(--border);
+  border-radius:18px;
+  padding:22px;
+  color:var(--muted);
+  box-shadow:0 10px 30px rgba(0,0,0,.25);
+  backdrop-filter:blur(4px);
+}
 
-  /* Signature line */
-  .signature{
-    margin-top:16px; color:#b7c4e5; font-size:14px; letter-spacing:.4px;
-    display:flex; justify-content:center; gap:8px; align-items:center;
-    opacity:0; transform:translateY(14px);
-    animation:signIn 1.1s ease .35s forwards;
-  }
-  .signature strong{ color:var(--accent-2) }
-  .dot{ width:6px; height:6px; border-radius:999px; background:linear-gradient(180deg,#9edbd0,#66c7ad); box-shadow:0 0 18px #66c7ad; }
-  @keyframes signIn{ to{ opacity:1; transform:translateY(0) } }
+/* BUTTON */
+.btn{
+  display:inline-block;
+  background:linear-gradient(180deg, var(--accent), #5da3ff);
+  color:#061428;
+  font-weight:800;
+  border-radius:14px;
+  padding:16px 26px;
+  text-decoration:none;
+  transition:transform .2s ease, box-shadow .2s ease;
+  box-shadow:0 6px 18px rgba(123,178,255,.28);
+  font-size:18px;
+}
+.btn:hover{ transform:translateY(-2px); box-shadow:0 12px 28px rgba(123,178,255,.35); }
 
-  @media (max-width:540px){
-    .wrap{ padding-bottom:155px }
-    .cat{ right:-12px; width:min(44vw, 210px) }
-  }
-  @media (prefers-reduced-motion: reduce){
-    .o1,.o2,.cat,.signature{ animation:none; opacity:1; transform:none }
-  }
+/* CREATED BY */
+.signature{
+  margin-top:25px;
+  font-size:14px;
+  color:var(--muted);
+  opacity:0;
+  animation: fadeIn 1.3s ease 2.4s forwards;
+}
+.signature span{
+  color:var(--accent-2);
+  font-weight:700;
+}
+
+/* CAT ANIMATION – center → grow → move to corner */
+.cat{
+  position:absolute;
+  z-index:9;
+
+  width: min(38vw, 260px);
+  max-width: 300px;
+  height:auto;
+
+  /* final position */
+  right: -6px;
+  bottom: -6px;
+
+  /* start hidden at center */
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.6);
+  animation:
+      catAppear 0.8s ease-out forwards,
+      catMove 1.2s cubic-bezier(.2,.7,.2,1) 0.8s forwards,
+      catIdle 6s ease-in-out 2s infinite alternate;
+}
+
+/* Step 1: fade + scale up in center */
+@keyframes catAppear{
+  0% { opacity:0; transform:translate(50vw, 50vh) scale(0.6); }
+  100% { opacity:1; transform:translate(-50%, -50%) scale(1.15); }
+}
+
+/* Step 2: move to final location */
+@keyframes catMove{
+  0% { transform:translate(-50%, -50%) scale(1.15); }
+  100% { transform:translate(0,0) scale(1); }
+}
+
+/* Step 3: idle breathing motion */
+@keyframes catIdle{
+  from{ transform:translate(0,0) scale(1); }
+  to  { transform:translate(0,-6px) scale(1.015); }
+}
+
+/* fade-in for signature */
+@keyframes fadeIn{
+  from{ opacity:0; }
+  to{ opacity:1; }
+}
 </style>
 </head>
-<body>
-  <div class="float"><div class="orb o1"></div><div class="orb o2"></div></div>
 
-  <div class="wrap">
-    <h1>Retail Bulletin Photo &<br>Drawing Contest</h1>
+<body>
+
+<!-- CAT IMAGE -->
+<img src="images/cat-signature.png" alt="cat" class="cat">
+
+<div class="wrap">
+    <h1>Retail Bulletin Photo & Drawing Contest</h1>
+
     <p class="sub">
-      You will cast votes for <strong>two contests</strong> published in our Retail Bulletin.<br>
-      First the <strong>Photo Contest</strong>, then the <strong>Drawing Contest</strong>.<br>
-      You may select up to <strong>5 entries</strong> per category. Voting is anonymous.
+        You will cast votes for <strong>two contests</strong> published in our Retail Bulletin.
+        First the <strong>Photo Contest</strong>, then the <strong>Drawing Contest</strong>.
+        You may select up to <strong>5 entries</strong> per category. Voting is anonymous.
     </p>
 
-    <div class="panel">
-      After completing both steps, the <strong>Live Results</strong> page will show total votes
-      for Photo and Drawing separately.
+    <div class="card">
+        After submitting both votes, the Live Results page will show totals for
+        <strong>Photo</strong> and <strong>Drawing</strong> separately.
     </div>
 
     <p><a class="btn" href="vote.html?step=photo">Start Voting</a></p>
 
-    <div class="steps">
-      <span class="chip">Step 1: Photo</span>
-      <span class="chip">Step 2: Drawing</span>
-      <span class="chip">Step 3: Results</span>
-    </div>
+    <p class="signature">Created by <span>Aslı Demirelli</span></p>
+</div>
 
-    <!-- Cat (attention-grabbing) -->
-    <img src="images/cat-signature.png" alt="Aslı's cat" class="cat">
-
-    <!-- Signature -->
-    <div class="signature">
-      <span class="dot" aria-hidden="true"></span>
-      <span>Created by <strong>Aslı Demirelli</strong></span>
-    </div>
-  </div>
 </body>
 </html>
