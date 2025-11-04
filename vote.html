@@ -134,7 +134,7 @@
       submitBtn.disabled = true;
       try{
         const body = { kind: KIND, votes: Array.from(selected), fingerprint: fingerprint() };
-        await fetch(API_BASE + (KIND?`?kind=${KIND}`:''), { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+        await fetch(API_BASE + (KIND?`?kind=${KIND}`:''), {   method: 'POST',   headers: { 'Content-Type': 'text/plain;charset=utf-8' },   body: JSON.stringify(body) });
         // işaretle ve akış
         localStorage.setItem('voted_'+KIND,'1');
         const other = KIND==='photo' ? 'voted_drawing' : 'voted_photo';
