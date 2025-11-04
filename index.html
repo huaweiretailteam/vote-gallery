@@ -7,16 +7,11 @@
 
 <style>
 :root{
-  --bg: #0b0e14;
-  --panel:#111625;
-  --muted:#9aa6bf;
-  --border:#202842;
-  --accent:#7bb2ff;
-  --accent-2:#8be9c7;
-  --text:#e8ecf1;
+  --bg:#0b0e14; --panel:#111625; --muted:#9aa6bf;
+  --border:#202842; --accent:#7bb2ff; --accent-2:#8be9c7; --text:#e8ecf1;
 }
 
-/* RESET */
+/* reset */
 *{box-sizing:border-box;margin:0;padding:0}
 body{
   font-family:Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
@@ -25,115 +20,73 @@ body{
   overflow-x:hidden;
 }
 
-/* PAGE WRAPPER */
-.wrap{
-  max-width:900px;
-  margin:90px auto;
-  padding:0 22px;
-  text-align:center;
-}
+/* layout */
+.wrap{max-width:900px;margin:90px auto;padding:0 22px 120px;text-align:center}
+h1{font-size:38px;font-weight:800;letter-spacing:.3px;margin-bottom:14px}
+p.sub{color:var(--muted);max-width:720px;margin:0 auto 26px;line-height:1.6}
 
-/* TITLE */
-h1{
-  font-size:38px;
-  font-weight:800;
-  letter-spacing:.3px;
-  margin-bottom:14px;
-}
-
-/* SUBDESC */
-p.sub{
-  color:var(--muted);
-  max-width:720px;
-  margin:0 auto 26px;
-  line-height:1.6;
-}
-
-/* CARD PANEL */
+/* panel & button */
 .card{
-  margin:30px auto;
-  max-width:700px;
-  background:linear-gradient(180deg, #101525, #0f1321);
-  border:1px solid var(--border);
-  border-radius:18px;
-  padding:22px;
-  color:var(--muted);
-  box-shadow:0 10px 30px rgba(0,0,0,.25);
-  backdrop-filter:blur(4px);
+  margin:30px auto;max-width:700px;background:linear-gradient(180deg,#101525,#0f1321);
+  border:1px solid var(--border);border-radius:18px;padding:22px;color:var(--muted);
+  box-shadow:0 10px 30px rgba(0,0,0,.25);backdrop-filter:blur(4px)
 }
-
-/* BUTTON */
 .btn{
-  display:inline-block;
-  background:linear-gradient(180deg, var(--accent), #5da3ff);
-  color:#061428;
-  font-weight:800;
-  border-radius:14px;
-  padding:16px 26px;
-  text-decoration:none;
-  transition:transform .2s ease, box-shadow .2s ease;
-  box-shadow:0 6px 18px rgba(123,178,255,.28);
-  font-size:18px;
+  display:inline-block;background:linear-gradient(180deg,var(--accent),#5da3ff);color:#061428;
+  font-weight:800;border-radius:14px;padding:16px 26px;text-decoration:none;font-size:18px;
+  transition:transform .2s ease, box-shadow .2s ease; box-shadow:0 6px 18px rgba(123,178,255,.28)
 }
-.btn:hover{ transform:translateY(-2px); box-shadow:0 12px 28px rgba(123,178,255,.35); }
+.btn:hover{transform:translateY(-2px);box-shadow:0 12px 28px rgba(123,178,255,.35)}
 
-/* CREATED BY */
+/* signature – earlier reveal */
 .signature{
-  margin-top:25px;
-  font-size:14px;
-  color:var(--muted);
-  opacity:0;
-  animation: fadeIn 1.3s ease 2.4s forwards;
+  margin-top:18px;font-size:14px;color:var(--muted);
+  opacity:0;animation:fadeIn 1s ease 1.2s forwards; /* daha erken */
 }
-.signature span{
-  color:var(--accent-2);
-  font-weight:700;
-}
+.signature span{color:var(--accent-2);font-weight:700}
+@keyframes fadeIn{to{opacity:1}}
 
-/* CAT ANIMATION – center → grow → move to corner */
+/* === CAT: center → BIG grow → shrink to normal while flying to corner === */
 .cat{
-  position:absolute;
-  z-index:9;
+  position:absolute; z-index:9;
+  width:min(38vw,260px); max-width:300px; height:auto;
+  right:-6px; bottom:-6px; /* final konum */
+  filter:drop-shadow(0 24px 36px rgba(0,0,0,.55));
 
-  width: min(38vw, 260px);
-  max-width: 300px;
-  height:auto;
-
-  /* final position */
-  right: -6px;
-  bottom: -6px;
-
-  /* start hidden at center */
-  opacity: 0;
-  transform: translate(-50%, -50%) scale(0.6);
+  /* başlangıç: görünmez, merkezde küçük */
+  opacity:0; transform:translate(-50%, -50%) scale(.6);
   animation:
-      catAppear 0.8s ease-out forwards,
-      catMove 1.2s cubic-bezier(.2,.7,.2,1) 0.8s forwards,
-      catIdle 6s ease-in-out 2s infinite alternate;
+    catCenterGrow .75s cubic-bezier(.2,.7,.2,1) .05s forwards,   /* merkeze gel + büyükçe büyü */
+    catToCorner   1.05s cubic-bezier(.2,.7,.2,1) .80s forwards,   /* normale küçül + köşeye ak */
+    catIdle       5.5s ease-in-out 1.95s infinite alternate;      /* hafif nefes */
 }
 
-/* Step 1: fade + scale up in center */
-@keyframes catAppear{
-  0% { opacity:0; transform:translate(50vw, 50vh) scale(0.6); }
-  100% { opacity:1; transform:translate(-50%, -50%) scale(1.15); }
+/* Step1: merkeze fade-in + güçlü büyüme */
+@keyframes catCenterGrow{
+  0%   { opacity:0; transform:translate(50vw, 50vh) scale(.6); }
+  60%  { opacity:1; transform:translate(-50%, -50%) scale(1.45); } /* baya büyüsün */
+  100% { opacity:1; transform:translate(-50%, -50%) scale(1.45); }
 }
 
-/* Step 2: move to final location */
-@keyframes catMove{
-  0% { transform:translate(-50%, -50%) scale(1.15); }
+/* Step2: normal boyuta shrink + final köşeye akış */
+@keyframes catToCorner{
+  0%   { transform:translate(-50%, -50%) scale(1.45); }
   100% { transform:translate(0,0) scale(1); }
 }
 
-/* Step 3: idle breathing motion */
+/* Step3: köşede subtle breathing */
 @keyframes catIdle{
-  from{ transform:translate(0,0) scale(1); }
-  to  { transform:translate(0,-6px) scale(1.015); }
+  from { transform:translate(0,0) scale(1); }
+  to   { transform:translate(0,-6px) scale(1.02); }
 }
 
-/* fade-in for signature */
-@keyframes fadeIn{
-  from{ opacity:0; }
-  to{ opacity:1; }
+/* responsive */
+@media (max-width:540px){
+  .wrap{padding-bottom:150px}
+  .cat{right:-10px;width:min(44vw,210px)}
+}
+@media (prefers-reduced-motion:reduce){
+  .cat,.signature{animation:none;opacity:1;transform:none}
 }
 </style>
 </head>
@@ -144,22 +97,22 @@ p.sub{
 <img src="images/cat-signature.png" alt="cat" class="cat">
 
 <div class="wrap">
-    <h1>Retail Bulletin Photo & Drawing Contest</h1>
+  <h1>Retail Bulletin Photo & Drawing Contest</h1>
 
-    <p class="sub">
-        You will cast votes for <strong>two contests</strong> published in our Retail Bulletin.
-        First the <strong>Photo Contest</strong>, then the <strong>Drawing Contest</strong>.
-        You may select up to <strong>5 entries</strong> per category. Voting is anonymous.
-    </p>
+  <p class="sub">
+    You will cast votes for <strong>two contests</strong> published in our Retail Bulletin.
+    First the <strong>Photo Contest</strong>, then the <strong>Drawing Contest</strong>.
+    You may select up to <strong>5 entries</strong> per category. Voting is anonymous.
+  </p>
 
-    <div class="card">
-        After submitting both votes, the Live Results page will show totals for
-        <strong>Photo</strong> and <strong>Drawing</strong> separately.
-    </div>
+  <div class="card">
+    After submitting both votes, the Live Results page will show totals for
+    <strong>Photo</strong> and <strong>Drawing</strong> separately.
+  </div>
 
-    <p><a class="btn" href="vote.html?step=photo">Start Voting</a></p>
+  <p><a class="btn" href="vote.html?step=photo">Start Voting</a></p>
 
-    <p class="signature">Created by <span>Aslı Demirelli</span></p>
+  <p class="signature">Created by <span>Aslı Demirelli</span></p>
 </div>
 
 </body>
