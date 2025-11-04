@@ -4,8 +4,9 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Retail Bulletin Photo & Drawing Contest</title>
+
 <style>
-  :root{
+  :root {
     --bg: #0b0e14;
     --panel:#111625;
     --muted:#9aa6bf;
@@ -14,58 +15,136 @@
     --accent-2:#8be9c7;
     --text:#e8ecf1;
   }
-  *{box-sizing:border-box}
-  body{margin:0;background:radial-gradient(1200px 600px at 70% -20%, #1a2240 0%, transparent 60%), var(--bg); color:var(--text); font-family:Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif}
-  .wrap{max-width:900px;margin:72px auto;padding:0 18px;text-align:center}
-  h1{margin:0 0 12px;font-size:34px;letter-spacing:.2px}
-  p.sub{margin:0 auto 26px;color:var(--muted);max-width:720px;line-height:1.5}
-  .card{margin:20px auto;max-width:700px;background:linear-gradient(180deg, #101525, #0f1321);border:1px solid var(--border);border-radius:18px;padding:22px;color:var(--muted);backdrop-filter: blur(4px); box-shadow:0 10px 30px rgba(0,0,0,.25)}
-  .btn{display:inline-block;background:linear-gradient(180deg, var(--accent), #5da3ff);color:#061428;border:none;border-radius:14px;padding:14px 18px;font-weight:800;text-decoration:none;transition:transform .2s ease, box-shadow .2s ease; box-shadow:0 6px 18px rgba(123,178,255,.28)}
-  .btn:hover{transform:translateY(-1px); box-shadow:0 10px 26px rgba(123,178,255,.35)}
-  .meta{display:inline-flex;gap:10px;margin-top:12px; color:var(--muted); font-size:13px}
-  .chip{border:1px solid var(--border); padding:6px 10px; border-radius:999px}
-  .float{position:fixed;inset:0;pointer-events:none}
-  .orb{position:absolute;width:280px;height:280px;border-radius:50%;filter:blur(60px);opacity:.12;animation: drift 18s ease-in-out infinite alternate}
-  .orb.o1{top:8%; left:12%; background:#7bb2ff}
-  .orb.o2{bottom:10%; right:14%; background:#8be9c7; animation-duration:22s}
-  @keyframes drift{
-    0%{transform:translate(0,0) rotate(0)}
-    100%{transform:translate(30px, -24px) rotate(10deg)}
-  }
-  @media (prefers-reduced-motion: reduce){
-    .btn, .orb{animation:none}
+  *{ box-sizing:border-box; }
+  body {
+    margin:0;
+    background:radial-gradient(1200px 600px at 70% -20%, #1a2240 0%, transparent 60%), var(--bg);
+    color:var(--text);
+    font-family:Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
   }
 
-  /* === credit line === */
-  .credit{
-    margin-top: 28px;
-    color: var(--muted);
-    opacity: .9;
-    font-size: 13px;
-    letter-spacing: .2px;
+  .wrap {
+    max-width:900px;
+    margin:72px auto;
+    padding:0 18px;
+    text-align:center;
   }
-  .credit strong{color:#e2e8f0}
+
+  h1 { margin:0 0 12px; font-size:34px; letter-spacing:.2px; }
+  p.sub { margin:0 auto 26px; color:var(--muted); max-width:720px; line-height:1.5; }
+
+  .card {
+    margin:20px auto;
+    max-width:700px;
+    background:linear-gradient(180deg, #101525, #0f1321);
+    border:1px solid var(--border);
+    border-radius:18px;
+    padding:22px;
+    color:var(--muted);
+    backdrop-filter: blur(4px);
+    box-shadow:0 10px 30px rgba(0,0,0,.25);
+  }
+
+  .btn {
+    display:inline-block;
+    background:linear-gradient(180deg, var(--accent), #5da3ff);
+    color:#061428;
+    border:none;
+    border-radius:14px;
+    padding:14px 18px;
+    font-weight:800;
+    text-decoration:none;
+    transition:transform .2s ease, box-shadow .2s ease;
+    box-shadow:0 6px 18px rgba(123,178,255,.28);
+  }
+  .btn:hover { transform:translateY(-1px); box-shadow:0 10px 26px rgba(123,178,255,.35); }
+
+  .meta { display:inline-flex; gap:10px; margin-top:12px; color:var(--muted); font-size:13px; }
+  .chip { border:1px solid var(--border); padding:6px 10px; border-radius:999px; }
+
+  /* background floating lights */
+  .float { position:fixed; inset:0; pointer-events:none; }
+  .orb { position:absolute; width:280px; height:280px; border-radius:50%; filter:blur(60px); opacity:.12; animation: drift 18s ease-in-out infinite alternate; }
+  .orb.o1{ top:8%; left:12%; background:#7bb2ff; }
+  .orb.o2{ bottom:10%; right:14%; background:#8be9c7; animation-duration:22s; }
+
+  @keyframes drift {
+    0% { transform:translate(0,0) rotate(0); }
+    100% { transform:translate(30px, -24px) rotate(10deg); }
+  }
+
+  /* ✦ CAT SIGNATURE PHOTO ✦ */
+  .signature-photo {
+    width: 260px;
+    height: 260px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-top: 50px;
+    opacity: 0;
+    transform: scale(0.92);
+    animation: imgPop 1.6s ease forwards;
+    border: 3px solid rgba(255,255,255,.08);
+    box-shadow: 0 12px 28px rgba(0,0,0,.45);
+  }
+
+  @keyframes imgPop {
+    0%   { opacity: 0; transform: scale(0.85); }
+    100% { opacity: 1; transform: scale(1); }
+  }
+
+  /* ✦ SIGNATURE TEXT ✦ */
+  .signature-text {
+    opacity: 0;
+    transform: translateY(15px);
+    animation: fadeSignature 1.4s ease forwards;
+    animation-delay: .4s;
+    color: var(--muted);
+    font-size: 14px;
+    letter-spacing: .4px;
+    margin-top: 15px;
+  }
+
+  .signature-text strong {
+    color: var(--accent-2);
+    font-weight: 700;
+  }
+
+  @keyframes fadeSignature {
+    0%   { opacity: 0; transform: translateY(18px); }
+    100% { opacity: 1; transform: translateY(0); }
+  }
 </style>
 </head>
+
 <body>
   <div class="float"><div class="orb o1"></div><div class="orb o2"></div></div>
+
   <div class="wrap">
     <h1>Retail Bulletin Photo & Drawing Contest</h1>
     <p class="sub">
-      You will cast votes for <strong>two separate contests</strong> published in our Retail Bulletin.
-      First the <strong>Photo Contest</strong>, then the <strong>Drawing Contest</strong>.
+      You will cast votes for <strong>two contests</strong> published in our Retail Bulletin.<br>
+      First the <strong>Photo Contest</strong>, then the <strong>Drawing Contest</strong>.<br>
       You may select up to <strong>5 entries</strong> per category. Voting is anonymous.
     </p>
-    <div class="card">When both votes are submitted, the live <strong>Results</strong> page will display totals for Photo and Drawing separately.</div>
+
+    <div class="card">
+      After completing both steps, the <strong>Live Results</strong> page will show total votes
+      for Photo and Drawing separately.
+    </div>
+
     <p><a class="btn" href="vote.html?step=photo">Start Voting</a></p>
+
     <div class="meta">
       <span class="chip">Step 1: Photo</span>
       <span class="chip">Step 2: Drawing</span>
       <span class="chip">Step 3: Results</span>
     </div>
 
-    <!-- credit -->
-    <p class="credit">Created by <strong>Asli Demirelli</strong></p>
+    <!-- ✦ CAT IMAGE (YOUR SIGNATURE) ✦ -->
+    <img src="images/cat-signature.jpg" class="signature-photo" alt="Signature Cat">
+
+    <!-- ✦ SIGNATURE TEXT ✦ -->
+    <p class="signature-text">Created by <strong>Aslı Demirelli</strong></p>
   </div>
 </body>
 </html>
