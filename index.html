@@ -3,91 +3,24 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Sonuçlar – Retail Bülten Yarışmaları</title>
+<title>Retail Bülten Fotoğraf & Çizim Yarışması</title>
 <style>
   body{margin:0;background:#0f1115;color:#e8ecf1;font-family:Inter,system-ui,sans-serif}
-  .wrap{max-width:1100px;margin:24px auto;padding:0 16px}
-  h1{margin:0 0 16px}
-  h2{margin:24px 0 10px}
-  p.sub{margin:0 0 18px;color:#9aa0b3}
-  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px}
-  .card{background:#151824;border:1px solid #20263a;border-radius:14px;overflow:hidden}
-  .thumb{width:100%;aspect-ratio:4/3;object-fit:cover;background:#0b0e15}
-  .row{display:flex;align-items:center;gap:10px;padding:10px 12px}
-  .title{font-weight:600}
-  .score{margin-left:auto;background:#1b2438;border:1px solid #29324b;border-radius:999px;padding:6px 10px;font-weight:800}
-  .toolbar{display:flex;gap:10px;align-items:center;margin:10px 0 16px}
-  .badge{font-size:12px;color:#a6afc3;border:1px solid #2a2f44;padding:6px 10px;border-radius:999px}
-  a{color:#9dccff}
+  .wrap{max-width:900px;margin:56px auto;padding:0 16px;text-align:center}
+  h1{margin:0 0 10px;font-size:32px}
+  p.sub{margin:0 0 24px;color:#a6afc3}
+  .btn{display:inline-block;background:#6ea8fe;color:#071222;border:none;border-radius:12px;padding:14px 18px;font-weight:800;text-decoration:none}
+  .card{margin:18px auto;max-width:680px;background:#151824;border:1px solid #20263a;border-radius:16px;padding:24px;color:#a6afc3}
 </style>
 </head>
 <body>
   <div class="wrap">
-    <h1>Toplam Oylar</h1>
-    <p class="sub">Aşağıda Fotoğraf ve Çizim yarışmaları için toplam oy sayıları ayrı başlıklar altında listelenir.</p>
-    <div class="toolbar">
-      <a class="badge" href="index.html">← Ana sayfa</a>
-      <span class="badge" id="totalPhoto">Fotoğraf toplam: 0</span>
-      <span class="badge" id="totalDrawing">Çizim toplam: 0</span>
-    </div>
-
-    <h2>Fotoğraf Yarışması</h2>
-    <div id="photoGrid" class="grid"></div>
-
-    <h2>Çizim Yarışması</h2>
-    <div id="drawingGrid" class="grid"></div>
+    <h1>Retail Bülten Fotoğraf & Çizim Yarışması</h1>
+    <p class="sub">Retail Bülten’de yayınlanan <strong>iki yarışmamız</strong> için oylama yapacaksınız.
+      Önce <strong>Fotoğraf Yarışması</strong> oylaması, ardından <strong>Çizim Yarışması</strong> oylaması açılacaktır.
+      Her kategoride en fazla <strong>5</strong> seçim yapabilirsiniz.</p>
+    <div class="card">Oylamalar anonimdir. Bitirince toplam oy sayıları iki başlık (Fotoğraf / Çizim) şeklinde yayınlanır.</div>
+    <p><a class="btn" href="vote.html?step=photo">Oylamaya Geç</a></p>
   </div>
-
-<script>
-  const API_BASE = "https://script.google.com/macros/s/AKfycbz1oeJv3JdO6v5sB87AlcJMqKS8Rbjqb6sR73u235KmBZpNn9DscySfujcVQf7-lz6Eww/exec";
-  const PHOTO_COUNT   = 2; // gerçek sayılara göre güncelle
-  const DRAWING_COUNT = 2;
-
-  function buildList(kind){
-    const n = kind==='drawing' ? DRAWING_COUNT : PHOTO_COUNT;
-    const prefix = kind==='drawing' ? 'drawing' : 'photo';
-    const labelPrefix = kind==='drawing' ? 'Drawing #' : 'Photo #';
-    return Array.from({length:n},(_,i)=>{
-      const id = String(i+1).padStart(2,'0');
-      return { id, label: `${labelPrefix}${id}`, src: `images/${prefix}-${id}.jpg` };
-    });
-  }
-
-  function renderSection(kind, counts, gridEl, totalEl){
-    const LIST = buildList(kind);
-    gridEl.innerHTML = '';
-    let total = 0;
-    const data = LIST.map(p=>({ ...p, score: (counts[p.label]||0) })).sort((a,b)=> b.score - a.score);
-    data.forEach(p=> total += p.score );
-    totalEl.textContent = (kind==='drawing' ? 'Çizim toplam: ' : 'Fotoğraf toplam: ') + total;
-
-    if (LIST.length===0) {
-      gridEl.innerHTML = '<div style="opacity:.8">Bu kategoride şu an görsel yok.</div>';
-      return;
-    }
-
-    data.forEach(p=>{
-      const card = document.createElement('div');
-      card.className = 'card';
-      card.innerHTML = `
-        <img class="thumb" src="${p.src}" alt="${p.label}" onerror="this.style.opacity=0.25">
-        <div class="row"><div class="title">${p.label}</div><div class="score">${p.score}</div></div>`;
-      gridEl.appendChild(card);
-    });
-  }
-
-  async function loadAll(){
-    const resPhoto = await fetch(API_BASE + '?kind=photo');  const jsPhoto = await resPhoto.json();
-    const resDraw  = await fetch(API_BASE + '?kind=drawing');const jsDraw  = await resDraw.json();
-
-    const photoCounts = (jsPhoto && jsPhoto.ok && jsPhoto.counts) ? jsPhoto.counts : {};
-    const drawCounts  = (jsDraw  && jsDraw.ok  && jsDraw.counts)  ? jsDraw.counts  : {};
-
-    renderSection('photo',   photoCounts,   document.getElementById('photoGrid'),   document.getElementById('totalPhoto'));
-    renderSection('drawing', drawCounts,    document.getElementById('drawingGrid'), document.getElementById('totalDrawing'));
-  }
-
-  loadAll();
-</script>
 </body>
 </html>
