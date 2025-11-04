@@ -1,75 +1,29 @@
-<!DOCTYPE html><html lang="tr"><head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Fotoğraf Yarışması – Oylama (Test)</title>
-<style>
-body{margin:0;background:#0f1115;color:#e8ecf1;font-family:system-ui,sans-serif}
-.wrap{max-width:1000px;margin:24px auto;padding:0 16px}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px}
-.card{background:#151824;border:1px solid #20263a;border-radius:12px;overflow:hidden}
-.thumb{width:100%;aspect-ratio:4/3;object-fit:cover;background:#0b0e15}
-.row{display:flex;gap:10px;align-items:center;padding:10px 12px}
-.title{font-weight:600}.muted{font-size:12px;color:#9aa0b3}
-.footer{position:sticky;bottom:0;background:linear-gradient(180deg,transparent,rgba(15,17,21,.95));padding:14px}
-.panel{max-width:1000px;margin:0 auto;background:#121622;border:1px solid #22283d;border-radius:12px;padding:12px;display:flex;gap:12px;align-items:center}
-.btn{margin-left:auto;background:#6ea8fe;color:#071222;border:none;border-radius:10px;padding:10px 14px;font-weight:700;cursor:pointer}
-.btn:disabled{opacity:.5;cursor:not-allowed}
-.badge{font-size:12px;color:#a6afc3;border:1px solid #2a2f44;padding:6px 10px;border-radius:999px}
-</style></head><body>
-<div class="wrap">
-  <h1>Fotoğraf & Çizim Yarışması – Oylama (Test)</h1>
-  <p style="color:#9aa0b3;margin:0 0 16px">Maksimum <strong>5</strong> görsel seçebilirsiniz. (Şimdilik 2 görsel yüklü.)</p>
-  <div style="display:flex;gap:10px;align-items:center;margin:8px 0 16px">
-    <span class="badge" id="countBadge">0 görsel</span>
-    <span class="badge">Seçili: <span id="selCount">0</span>/5</span>
-    <a class="badge" href="results.html">Sonuçlar sayfası</a>
-  </div>
-  <div id="grid" class="grid"></div>
-</div>
-<div class="footer"><div class="panel">
-  <div id="status" style="font-size:14px;color:#a6afc3"></div>
-  <button class="btn" id="submitBtn" disabled>Gönder (test)</button>
-</div></div>
-<script>
-const MAX_SELECTION=5;
-const PHOTOS=[
-  {id:'01',label:'Photo #01',src:'images/photo-01.jpg'},
-  {id:'02',label:'Photo #02',src:'images/photo-02.jpg'}
-];
-const grid=document.getElementById('grid');
-const submitBtn=document.getElementById('submitBtn');
-const selCountEl=document.getElementById('selCount');
-const countBadge=document.getElementById('countBadge');
-countBadge.textContent=`${PHOTOS.length} görsel`;
-let selected=new Set();
-function render(){
-  grid.innerHTML='';
-  PHOTOS.forEach(p=>{
-    const card=document.createElement('div');
-    card.className='card';
-    card.innerHTML=`
-      <img class="thumb" src="${p.src}" alt="${p.label}">
-      <div class="row">
-        <div style="display:flex;flex-direction:column">
-          <div class="title">${p.label}</div>
-          <div class="muted">${p.id}</div>
-        </div>
-        <label style="margin-left:auto"><input type="checkbox" data-id="${p.label}"></label>
-      </div>`;
-    grid.appendChild(card);
-  });
-  grid.querySelectorAll('input[type="checkbox"]').forEach(cb=>{
-    cb.addEventListener('change',e=>{
-      const val=e.target.getAttribute('data-id');
-      if(e.target.checked){
-        if(selected.size>=MAX_SELECTION){e.target.checked=false;return;}
-        selected.add(val);
-      }else{selected.delete(val);}
-      selCountEl.textContent=selected.size;
-      submitBtn.disabled=selected.size===0;
-    });
-  });
-}
-render();
-submitBtn.addEventListener('click',()=>{ window.location.href='results.html'; });
-</script>
-</body></html>
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Yarışma Seçimi – Fotoğraf & Çizim</title>
+  <style>
+    body{margin:0;background:#0f1115;color:#e8ecf1;font-family:Inter,system-ui,sans-serif}
+    .wrap{max-width:900px;margin:48px auto;padding:0 16px;text-align:center}
+    h1{margin:0 0 10px;font-size:32px}
+    p.sub{margin:0 0 28px;color:#a6afc3}
+    .row{display:flex;gap:16px;justify-content:center;flex-wrap:wrap}
+    .card{flex:1 1 300px;max-width:360px;background:#151824;border:1px solid #20263a;border-radius:16px;padding:24px}
+    .btn{display:inline-block;margin-top:12px;background:#6ea8fe;color:#071222;border:none;border-radius:12px;padding:12px 16px;font-weight:800;text-decoration:none}
+    .muted{color:#9aa0b3;font-size:13px;margin-top:8px}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Fotoğraf & Çizim Yarışması</h1>
+    <p class="sub">Önce birini oyla, sonra otomatik diğerine geçeceksin. Her kategoride <strong>en fazla 5</strong> seçim.</p>
+
+    <div class="row">
+      <div class="card">
+        <h2>Fotoğraf Yarışması</h2>
+        <p class="muted">Favori fotoğraflarını seç.</p>
+        <a class="btn" href="vote.html?kind=photo">Fotoğraf Yarışması İçin Oyla!</a>
+      </div>
+      <div
