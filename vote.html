@@ -1,69 +1,83 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="en">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Oylama – Retail Bülten</title>
+<title>Voting – Retail Bulletin</title>
 <style>
-  body{margin:0;background:#0f1115;color:#e8ecf1;font-family:Inter,system-ui,sans-serif}
-  .wrap{max-width:1100px;margin:24px auto;padding:0 16px}
-  h1{margin:0 0 6px}
-  p.sub{margin:0 0 18px;color:#9aa0b3}
+  :root{
+    --bg:#0b0e14; --panel:#111625; --muted:#9aa6bf; --border:#202842; --accent:#7bb2ff; --text:#e8ecf1;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:radial-gradient(900px 480px at 20% -10%, #1a2240 0%, transparent 60%), var(--bg); color:var(--text); font-family:Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif}
+  .wrap{max-width:1120px;margin:26px auto;padding:0 18px}
+  h1{margin:0 0 6px;font-size:28px}
+  p.sub{margin:0 0 16px;color:var(--muted)}
   .toolbar{display:flex;gap:10px;align-items:center;margin:10px 0 16px;flex-wrap:wrap}
-  .badge{font-size:12px;color:#a6afc3;border:1px solid #2a2f44;padding:6px 10px;border-radius:999px}
-  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px}
-  .card{background:#151824;border:1px solid #20263a;border-radius:14px;overflow:hidden}
-  .thumb{width:100%;aspect-ratio:4/3;object-fit:cover;background:#0b0e15}
+  .badge{font-size:12px;color:var(--muted);border:1px solid var(--border);padding:6px 10px;border-radius:999px;background:#0f1426}
+  .badge a{color:inherit;text-decoration:none}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:16px}
+  .card{background:linear-gradient(180deg, #12182b, #0f1426);border:1px solid var(--border);border-radius:16px;overflow:hidden;transform:translateY(6px);opacity:0;animation:fadeUp .5s ease forwards}
+  .thumb{width:100%;aspect-ratio:4/3;object-fit:cover;background:#090d18; transition: transform .25s ease}
   .row{display:flex;align-items:center;gap:10px;padding:10px 12px}
   .title{font-weight:600}
-  .muted{font-size:12px;color:#92a0b8}
-  .footer{position:sticky;bottom:0;background:linear-gradient(180deg,transparent,rgba(15,17,21,.95));padding:14px}
-  .panel{max-width:1100px;margin:0 auto;background:#121622;border:1px solid #22283d;border-radius:12px;padding:12px;display:flex;gap:12px;align-items:center}
-  .btn{margin-left:auto;background:#6ea8fe;color:#071222;border:none;border-radius:10px;padding:10px 14px;font-weight:800;cursor:pointer}
-  .btn:disabled{opacity:.5;cursor:not-allowed}
-  a{color:#9dccff}
+  .muted{font-size:12px;color:var(--muted)}
+  .row input{transform:scale(1.2)}
+  .card:hover .thumb{transform:scale(1.02)}
+  .footer{position:sticky;bottom:0;background:linear-gradient(180deg, transparent, rgba(9,11,17,.9));padding:14px}
+  .panel{max-width:1120px;margin:0 auto;background:#0f1424;border:1px solid var(--border);border-radius:12px;padding:12px;display:flex;gap:12px;align-items:center}
+  .btn{margin-left:auto;background:linear-gradient(180deg, var(--accent), #5da3ff);color:#061428;border:none;border-radius:10px;padding:11px 14px;font-weight:800;cursor:pointer;transition: transform .15s ease, box-shadow .2s ease; box-shadow:0 6px 16px rgba(123,178,255,.25)}
+  .btn:hover{transform:translateY(-1px); box-shadow:0 10px 22px rgba(123,178,255,.3)}
+  .btn:disabled{opacity:.5;cursor:not-allowed;transform:none; box-shadow:none}
+  a{color:#a8cfff}
+  @keyframes fadeUp{to{transform:none;opacity:1}}
+  @media (prefers-reduced-motion: reduce){ .card{animation:none; opacity:1; transform:none} .thumb{transition:none} .btn{transition:none} }
 </style>
 </head>
 <body>
   <div class="wrap">
-    <h1 id="pageTitle">Oylama</h1>
-    <p class="sub">Maksimum <strong>5</strong> görsel seçebilirsiniz. Oylama anonimdir.</p>
+    <h1 id="pageTitle">Voting</h1>
+    <p class="sub">Select up to <strong>5 entries</strong>. Voting is anonymous.</p>
 
     <div class="toolbar">
-      <span class="badge" id="countBadge">0 görsel</span>
-      <span class="badge">Seçili: <span id="selCount">0</span> / 5</span>
-      <a class="badge" href="index.html">← Ana sayfa</a>
+      <span class="badge" id="countBadge">0 entries</span>
+      <span class="badge">Selected: <span id="selCount">0</span> / 5</span>
+      <span class="badge"><a href="index.html">← Back to Home</a></span>
     </div>
 
-    <div id="grid" class="grid"></div>
+    <div id="grid" class="grid" aria-live="polite"></div>
   </div>
 
-  <div class="footer">
+  <div class="footer" role="contentinfo">
     <div class="panel">
-      <div id="status" style="font-size:14px;color:#a6afc3"></div>
-      <button class="btn" id="submitBtn" disabled>Kaydet ve Devam Et</button>
+      <div id="status" style="font-size:14px;color:#9fb2d8"></div>
+      <button class="btn" id="submitBtn" disabled>Submit</button>
     </div>
   </div>
 
 <script>
-  // ====== AYARLAR ======
+  // ==== SETTINGS ====
   const API_BASE = "https://script.google.com/macros/s/AKfycbz1oeJv3JdO6v5sB87AlcJMqKS8Rbjqb6sR73u235KmBZpNn9DscySfujcVQf7-lz6Eww/exec";
   const MAX_SELECTION = 5;
 
-  // Şu an test için (sen büyüteceksin):
-  const PHOTO_COUNT   = 2;   // tüm fotoları yükleyince 42 yap
-  const DRAWING_COUNT = 2;   // çizimleri yükleyince gerçek sayıya çek
+  // ✅ Your real image counts:
+  const PHOTO_COUNT   = 43;   // images/photo-01.jpg … photo-43.jpg
+  const DRAWING_COUNT = 13;   // images/drawing-01.jpg … drawing-13.jpg
 
-  // Akış: ?step=photo → fotoğraf, ardından otomatik drawing → sonra results
+  // Flow: ?step=photo → then drawing → then results
   const params = new URLSearchParams(location.search);
-  const STEP = (params.get('step') || 'photo').toLowerCase(); // photo | drawing
+  const STEP = (params.get('step') || 'photo').toLowerCase(); // 'photo' | 'drawing'
   const KIND = STEP === 'photo' ? 'photo' : 'drawing';
+
+  // Enforce order (Photo must be completed before Drawing)
+  if (STEP === 'drawing' && !localStorage.getItem('voted_photo')) {
+    location.replace('vote.html?step=photo');
+  }
 
   const submitBtn = document.getElementById('submitBtn');
   const pageTitle = document.getElementById('pageTitle');
-
-  if (STEP === 'photo') { pageTitle.textContent = 'Fotoğraf Yarışması – Oylama'; }
-  else { pageTitle.textContent = 'Çizim Yarışması – Oylama'; }
+  if (STEP === 'photo') { pageTitle.textContent = 'Photo Contest – Voting'; submitBtn.textContent = 'Save & Vote Drawings'; }
+  else { pageTitle.textContent = 'Drawing Contest – Voting'; submitBtn.textContent = 'Save & View Results'; }
 
   function buildList(kind){
     const n = kind==='drawing' ? DRAWING_COUNT : PHOTO_COUNT;
@@ -80,28 +94,24 @@
   const statusEl = document.getElementById('status');
   const selCountEl = document.getElementById('selCount');
   const countBadge = document.getElementById('countBadge');
-  countBadge.textContent = `${ITEMS.length} görsel`;
+  countBadge.textContent = `${ITEMS.length} entries`;
 
   let selected = new Set();
 
   function render(){
     grid.innerHTML = '';
-    if (ITEMS.length === 0) {
-      grid.innerHTML = '<div style="opacity:.8">Bu kategoride şu an görsel yok.</div>';
-      submitBtn.disabled = false; // yine de devam edebilsin
-      return;
-    }
-    ITEMS.forEach(p=>{
+    ITEMS.forEach((p, idx)=>{
       const card = document.createElement('div');
       card.className = 'card';
+      card.style.animationDelay = `${Math.min(idx, 8) * 40}ms`;
       card.innerHTML = `
-        <img class="thumb" src="${p.src}" alt="${p.label}" onerror="this.style.opacity=0.25">
+        <img class="thumb" src="${p.src}" alt="${p.label}">
         <div class="row">
           <div style="display:flex;flex-direction:column">
             <div class="title">${p.label}</div>
             <div class="muted">${p.id}</div>
           </div>
-          <label style="margin-left:auto"><input type="checkbox" data-id="${p.label}"></label>
+          <label style="margin-left:auto"><input type="checkbox" data-id="${p.label}" aria-label="Select ${p.label}"></label>
         </div>`;
       grid.appendChild(card);
     });
@@ -126,26 +136,20 @@
   }
 
   async function submitVotes(){
-    statusEl.textContent = 'Gönderiliyor...';
+    statusEl.textContent = 'Sending…';
     submitBtn.disabled = true;
-    const body = { kind: KIND, votes: Array.from(selected), fingerprint: fingerprint() };
 
     try{
-      const res = await fetch(API_BASE + `?kind=${KIND}`, {
+      await fetch(API_BASE + `?kind=${KIND}`, {
         method: 'POST',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // basit istek → preflight yok
-        body: JSON.stringify(body)
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // simple request → no preflight
+        body: JSON.stringify({ kind: KIND, votes: Array.from(selected), fingerprint: fingerprint() })
       });
-      // 200 değilse bile Apps Script dönebilir; devam edelim:
-    }catch(e){
-      // no-cors fallback denemek istemiyorsan burayı boş bırakabilirsin.
-      console.error('POST error', e);
-    }
+    }catch(e){ /* ignore */ }
 
-    // akış: photo → drawing → results
     localStorage.setItem('voted_'+KIND, '1');
-    if (STEP === 'photo')       location.href = 'vote.html?step=drawing';
-    else /* STEP === drawing */ location.href = 'results.html';
+    if (STEP === 'photo') location.replace('vote.html?step=drawing');
+    else location.replace('results.html');
   }
 
   render();
