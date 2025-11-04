@@ -41,7 +41,7 @@
   <div class="footer">
     <div class="panel">
       <div id="status" style="font-size:14px;color:#a6afc3"></div>
-      <button class="btn" id="submitBtn" disabled>Kaydet</button>
+      <button class="btn" id="submitBtn" disabled>Kaydet ve Devam Et</button>
     </div>
   </div>
 
@@ -50,30 +50,20 @@
   const API_BASE = "https://script.google.com/macros/s/AKfycbz1oeJv3JdO6v5sB87AlcJMqKS8Rbjqb6sR73u235KmBZpNn9DscySfujcVQf7-lz6Eww/exec";
   const MAX_SELECTION = 5;
 
-  // Gerçek sayılarını burada ayarla:
-  const PHOTO_COUNT   = 42;   // images/photo-01.jpg … photo-42.jpg
-  const DRAWING_COUNT = 42;   // images/drawing-01.jpg … drawing-42.jpg
+  // Şu an test için (sen büyüteceksin):
+  const PHOTO_COUNT   = 2;   // tüm fotoları yükleyince 42 yap
+  const DRAWING_COUNT = 2;   // çizimleri yükleyince gerçek sayıya çek
 
   // Akış: ?step=photo → fotoğraf, ardından otomatik drawing → sonra results
   const params = new URLSearchParams(location.search);
   const STEP = (params.get('step') || 'photo').toLowerCase(); // photo | drawing
   const KIND = STEP === 'photo' ? 'photo' : 'drawing';
 
-  // Sıralı oy zorunluluğu: fotoğraf bitmeden çizime geçilmesin
-  if (STEP === 'drawing' && !localStorage.getItem('voted_photo')) {
-    location.href = 'vote.html?step=photo';
-  }
-
   const submitBtn = document.getElementById('submitBtn');
   const pageTitle = document.getElementById('pageTitle');
 
-  if (STEP === 'photo') {
-    pageTitle.textContent = 'Fotoğraf Yarışması – Oylama';
-    submitBtn.textContent = 'Kaydet ve Çizim Yarışmasını Oyla';
-  } else {
-    pageTitle.textContent = 'Çizim Yarışması – Oylama';
-    submitBtn.textContent = 'Kaydet ve Sonuçları Gör';
-  }
+  if (STEP === 'photo') { pageTitle.textContent = 'Fotoğraf Yarışması – Oylama'; }
+  else { pageTitle.textContent = 'Çizim Yarışması – Oylama'; }
 
   function buildList(kind){
     const n = kind==='drawing' ? DRAWING_COUNT : PHOTO_COUNT;
@@ -141,18 +131,21 @@
     const body = { kind: KIND, votes: Array.from(selected), fingerprint: fingerprint() };
 
     try{
-      await fetch(API_BASE + `?kind=${KIND}`, {
+      const res = await fetch(API_BASE + `?kind=${KIND}`, {
         method: 'POST',
         headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // basit istek → preflight yok
         body: JSON.stringify(body)
       });
+      // 200 değilse bile Apps Script dönebilir; devam edelim:
     }catch(e){
+      // no-cors fallback denemek istemiyorsan burayı boş bırakabilirsin.
       console.error('POST error', e);
     }
 
+    // akış: photo → drawing → results
     localStorage.setItem('voted_'+KIND, '1');
-    if (STEP === 'photo') location.href = 'vote.html?step=drawing';
-    else location.href = 'results.html';
+    if (STEP === 'photo')       location.href = 'vote.html?step=drawing';
+    else /* STEP === drawing */ location.href = 'results.html';
   }
 
   render();
