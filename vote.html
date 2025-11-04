@@ -52,19 +52,19 @@
     const MAX_SELECTION = 5;
 
     // Şu an test için (repo'da 2 foto var, çizim yok):
-    const PHOTO_COUNT = 2;    // tüm fotoğrafları yükleyince 42 yap
-    const DRAWING_COUNT = 0;  // çizimleri yükleyince örn. 42 yap
+    const PHOTO_COUNT   = 2;   // tüm fotoğrafları yükleyince 42 yap
+    const DRAWING_COUNT = 0;   // çizimleri yükleyince örn. 42 yap
 
     // URL param: kind = photo | drawing
     const params = new URLSearchParams(location.search);
-    const KIND = (params.get('kind')||'photo').toLowerCase();
+    const KIND = (params.get('kind') || 'photo').toLowerCase();
 
     // Başlık ve geçiş butonu
     const submitBtn = document.getElementById('submitBtn');
     const pageTitle = document.getElementById('pageTitle');
     let NEXT_URL = 'results.html';
     if (KIND === 'photo') { pageTitle.textContent = 'Fotoğraf Yarışması – Oylama'; submitBtn.textContent = 'Kaydet ve Çizim Yarışmasına Geç'; NEXT_URL = 'vote.html?kind=drawing'; }
-    if (KIND === 'drawing') { pageTitle.textContent = 'Çizim Yarışması – Oylama'; submitBtn.textContent = 'Kaydet ve Fotoğraf Yarışmasına Geç'; NEXT_URL = 'vote.html?kind=photo'; }
+    if (KIND === 'drawing') { pageTitle.textContent = 'Çizim Yarışması – Oylama';  submitBtn.textContent = 'Kaydet ve Fotoğraf Yarışmasına Geç'; NEXT_URL = 'vote.html?kind=photo'; }
 
     // Görselleri hazırla
     function buildList(kind){
@@ -92,7 +92,7 @@
       grid.innerHTML = '';
       if (ITEMS.length === 0) {
         grid.innerHTML = '<div style="opacity:.8">Bu kategoride şu an görsel yok.</div>';
-        submitBtn.disabled = false; // görsel yoksa buton aktif kalsın → diğerine/sonuca geçebilsin
+        submitBtn.disabled = false; // görsel yoksa buton aktif → diğerine/sonuca geç.
         return;
       }
       ITEMS.forEach(p=>{
@@ -129,18 +129,39 @@
       return btoa(navigator.userAgent + '|' + screen.width + 'x' + screen.height);
     }
 
+    async function postJSON(url, bodyObj){
+      // 1) preflight tetiklemeyen "basit istek"
+      try{
+        return await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(bodyObj)
+        });
+      }catch(e){
+        // 2) Son çare: no-cors (yanıt okunamaz ama kayıt olur)
+        return await fetch(url, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(bodyObj)
+        });
+      }
+    }
+
     async function submitVotes(){
       statusEl.textContent = 'Gönderiliyor...';
       submitBtn.disabled = true;
       try{
         const body = { kind: KIND, votes: Array.from(selected), fingerprint: fingerprint() };
-        await fetch(API_BASE + (KIND?`?kind=${KIND}`:''), {   method: 'POST',   headers: { 'Content-Type': 'text/plain;charset=utf-8' },   body: JSON.stringify(body) });
+        await postJSON(API_BASE + (KIND?`?kind=${KIND}`:''), body);
+
         // işaretle ve akış
         localStorage.setItem('voted_'+KIND,'1');
         const other = KIND==='photo' ? 'voted_drawing' : 'voted_photo';
         if(localStorage.getItem(other)){ location.href='results.html'; }
         else { location.href = NEXT_URL; }
       }catch(e){
+        console.error(e);
         statusEl.textContent = 'Hata: Gönderilemedi. Lütfen tekrar deneyin.';
         submitBtn.disabled = false;
       }
