@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Oylama – Fotoğraf / Çizim</title>
+  <style>
+    body{margin:0;background:#0f1115;color:#e8ecf1;font-family:Inter,system-ui,sans-serif}
+    .wrap{max-width:1100px;margin:24px auto;padding:0 16px}
+    h1{margin:0 0 6px}
+    p.sub{margin:0 0 18px;color:#9aa0b3}
+    .toolbar{display:flex;gap:10px;align-items:center;margin:10px 0 16px;flex-wrap:wrap}
+    .badge{font-size:12px;color:#a6afc3;border:1px solid #2a2f44;padding:6px 10px;border-radius:999px}
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px}
+    .card{background:#151824;border:1px solid #20263a;border-radius:14px;overflow:hidden}
+    .thumb{width:100%;aspect-ratio:4/3;object-fit:cover;background:#0b0e15}
+    .row{display:flex;align-items:center;gap:10px;padding:10px 12px}
+    .title{font-weight:600}
+    .muted{font-size:12px;color:#92a0b8}
+    .footer{position:sticky;bottom:0;background:linear-gradient(180deg,transparent,rgba(15,17,21,.95));padding:14px}
+    .panel{max-width:1100px;margin:0 auto;background:#121622;border:1px solid #22283d;border-radius:12px;padding:12px;display:flex;gap:12px;align-items:center}
+    .btn{margin-left:auto;background:#6ea8fe;color:#071222;border:none;border-radius:10px;padding:10px 14px;font-weight:800;cursor:pointer}
+    .btn:disabled{opacity:.5;cursor:not-allowed}
+    a{color:#9dccff}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1 id="pageTitle">Oylama</h1>
+    <p class="sub">Maksimum <strong>5</strong> görsel seçebilirsiniz. Oylama anonimdir.</p>
+
+    <div class="toolbar">
+      <span class="badge" id="countBadge">0 görsel</span>
+      <span class="badge">Seçili: <span id="selCount">0</span> / 5</span>
+      <a class="badge" href="results.html">Sonuçlar</a>
+      <a class="badge" href="index.html">Yarışma seç</a>
+    </div>
+
+    <div id="grid" class="grid"></div>
+  </div>
+
+  <div class="footer">
+    <div class="panel">
+      <div id="status" style="font-size:14px;color:#a6afc3"></div>
+      <button class="btn" id="submitBtn" disabled>Kaydet ve Diğer Yarışmaya Geç</button>
+    </div>
+  </div>
+
+  <script>
+    // ====== AYARLAR ======
+    const API_BASE = "https://script.google.com/macros/s/AKfycbz1oeJv3JdO6v5sB87AlcJMqKS8Rbjqb6sR73u235KmBZpNn9DscySfujcVQf7-lz6Eww/exec";
+    const MAX_SELECTION = 5;
+
+    // Şu an test için (repo'da 2 foto var, çizim yok):
+    const PHOTO_COUNT = 2;    // tüm fotoğrafları yükleyince 42 yap
+    const DRAWING_COUNT = 0;  // çizimleri yükleyince örn. 42 yap
+
+    // URL param: kind = photo | drawing
+    const params = new URLSearchParams(location.search);
+    const KIND = (params.get('kind')||'photo').toLowerCase();
+
+    // Başlık ve geçiş butonu
+    const submitBtn = document.getElementById('submitBtn');
+    const pageTitle = document.getElementById('pageTitle');
+    let NEXT_URL = 'results.html';
+    if (KIND === 'photo') { pageTitle.textContent = 'Fotoğraf Yarışması – Oylama'; submitBtn.textContent = 'Kaydet ve Çizim Yarışmasına Geç'; NEXT_URL = 'vote.html?kind=drawing'; }
+    if (KIND === 'drawing') { pageTitle.textContent = 'Çizim Yarışması – Oylama'; submitBtn.textContent = 'Kaydet ve Fotoğraf Yarışmasına Geç'; NEXT_URL = 'vote.html?kind=photo'; }
+
+    // Görselleri hazırla
+    function buildList(kind){
+      const n = kind==='drawing' ? DRAWING_COUNT : PHOTO_COUNT;
+      const prefix = kind==='drawing' ? 'drawing' : 'photo';
+      const labelPrefix = kind==='drawing' ? 'Drawing #' : 'Photo #';
+      return Array.from({length:n},(_,i)=>{
+        const id = String(i+1).padStart(2,'0');
+        return { id, label: `${labelPrefix}${id}`, src: `images/${prefix}-${id}.jpg` };
+      });
+    }
+    const ITEMS = buildList(KIND);
+
+    // UI referansları
+    const grid = document.getElementById('grid');
+    const statusEl = document.getElementById('status');
+    const selCountEl = document.getElementById('selCount');
+    const countBadge = document.getElementById('countBadge');
+    countBadge.textContent = `${ITEMS.length} görsel`;
+
+    // Seçim durumu
+    let selected = new Set();
+
+    function render(){
+      grid.innerHTML = '';
+      if (ITEMS.length === 0) {
+        grid.innerHTML = '<div style="opacity:.8">Bu kategoride şu an görsel yok.</div>';
+        submitBtn.disabled = false; // görsel yoksa buton aktif kalsın → diğerine/sonuca geçebilsin
+        return;
+      }
+      ITEMS.forEach(p=>{
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+          <img class="thumb" src="${p.src}" alt="${p.label}" onerror="this.style.opacity=0.25">
+          <div class="row">
+            <div style="display:flex;flex-direction:column">
+              <div class="title">${p.label}</div>
+              <div class="muted">${p.id}</div>
+            </div>
+            <label style="margin-left:auto"><input type="checkbox" data-id="${p.label}"></label>
+          </div>`;
+        grid.appendChild(card);
+      });
+
+      grid.querySelectorAll('input[type="checkbox"]').forEach(cb=>{
+        cb.addEventListener('change',e=>{
+          const val = e.target.getAttribute('data-id');
+          if(e.target.checked){
+            if(selected.size>=MAX_SELECTION){ e.target.checked=false; return; }
+            selected.add(val);
+          }else{
+            selected.delete(val);
+          }
+          selCountEl.textContent = selected.size;
+          submitBtn.disabled = selected.size===0;
+        });
+      });
+    }
+
+    function fingerprint(){
+      return btoa(navigator.userAgent + '|' + screen.width + 'x' + screen.height);
+    }
+
+    async function submitVotes(){
+      statusEl.textContent = 'Gönderiliyor...';
+      submitBtn.disabled = true;
+      try{
+        const body = { kind: KIND, votes: Array.from(selected), fingerprint: fingerprint() };
+        await fetch(API_BASE + (KIND?`?kind=${KIND}`:''), { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+        // işaretle ve akış
+        localStorage.setItem('voted_'+KIND,'1');
+        const other = KIND==='photo' ? 'voted_drawing' : 'voted_photo';
+        if(localStorage.getItem(other)){ location.href='results.html'; }
+        else { location.href = NEXT_URL; }
+      }catch(e){
+        statusEl.textContent = 'Hata: Gönderilemedi. Lütfen tekrar deneyin.';
+        submitBtn.disabled = false;
+      }
+    }
+
+    render();
+    submitBtn.addEventListener('click', submitVotes);
+  </script>
+</body>
+</html>
